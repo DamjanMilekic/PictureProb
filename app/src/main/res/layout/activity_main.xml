@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.laptop.pictureprob.MainActivity">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imageToUpload"
+            android:src="@mipmap/tapme"
+            android:layout_gravity="center"
+            android:layout_width="150dp"
+            android:layout_height="150dp" />
+
+        <Button
+            android:padding="10dp"
+            android:id="@+id/brnUploadImage"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:text="UPLOAD Image"/>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="239dp"
+            android:id="@+id/listitem"/>
+
+        <HorizontalScrollView
+            android:id="@+id/horizontalView"
+            android:layout_height="wrap_content"
+            android:scrollbars="horizontal|vertical"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="5dip">
+        <TableLayout
+            android:id="@+id/tableNutri"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="horizontal|vertical"
+           >
+
+            <TableRow
+                android:id="@+id/tableRow1"
+                android:layout_width="wrap_content"
+
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:background="#000000"
+                    android:gravity="center"
+                    android:padding="6dip"
+                    android:text="Nutrient"
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/tableText"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:background="#000000"
+                    android:gravity="center"
+                    android:textColor="#ffffff"
+                    android:padding="6dip"
+                    android:text="Unit"
+                    android:textSize="@dimen/tableText"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:background="#000000"
+                    android:textColor="#ffffff"
+                    android:gravity="center"
+                    android:padding="6dp"
+                    android:text="Value per 100 g"
+                    android:textSize="@dimen/tableText"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:background="#000000"
+                    android:textColor="#ffffff"
+                    android:gravity="center"
+                    android:padding="6dp"
+                    android:text="Cup sections "
+                    android:textSize="@dimen/tableText"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:background="#000000"
+                    android:textColor="#ffffff"
+                    android:gravity="left"
+                    android:padding="6dp"
+                    android:text=" fruit (2-5/8 dia) 121g "
+                    android:textSize="@dimen/tableText"
+                    android:textStyle="bold" />
+
+            </TableRow>
+        </TableLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+
+
+</ScrollView>
