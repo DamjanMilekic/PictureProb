@@ -5,15 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -24,16 +28,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.File;
-
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-
 import Model.Measures;
 import Model.Nutrients;
 import Model.Utilities;
@@ -50,12 +51,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     ImageView imageToUpl;
     Button uppImage;
+    EditText urledit;
     ListView lv;
     TableLayout gridView;
 
     List<String> listItem = new ArrayList<String>() ;
     private static final int RESULT_LOAD_IMAGE =1;
     private static String PATH ="";
+    private static Integer check = 0;
     Utilities utilities = new Utilities();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,48 +73,113 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lv = (ListView) findViewById(R.id.listitem);
         gridView = (TableLayout)findViewById(R.id.tableNutri);
         gridView.setVisibility(View.INVISIBLE);
+        urledit = (EditText)findViewById(R.id.url);
 
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                String item = listItem.get(position);
-                PullFromUSDA fromUSDA = new PullFromUSDA();
-                fromUSDA.name = item;
-                fromUSDA.execute();
-
-            }
-        });
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        listener();
 
     }
+public void listener()
+{
+    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+            String item = listItem.get(position);
+            PullFromUSDA fromUSDA = new PullFromUSDA();
+            fromUSDA.name = item;
+            fromUSDA.execute();
+
+        }
+    });
+
+    urledit.addTextChangedListener(new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+            new DownloadAndShow(imageToUpl)
+                    .execute(urledit.getText().toString());
+            uppImage.setVisibility(View.VISIBLE);
+
+        }
+    });
+}
     @Override
     public void onClick(View v) {
 
         switch (v.getId()) {
             case R.id.imageToUpload:
-                if(imageToUpl!=null) {
 
+                    urledit.setVisibility(View.INVISIBLE);
                     Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(galleryIntent, RESULT_LOAD_IMAGE);
                     uppImage.setVisibility(View.VISIBLE);
-                }
-                else{Toast.makeText(this,"Pick a picture from a gallery first",Toast.LENGTH_LONG).show();}
+
+
                     break;
             case R.id.brnUploadImage:
                 // Bitmap image = ((BitmapDrawable)imageToUpl.getDrawable()).getBitmap();
-                PullFromClarifai fromClarifai = new PullFromClarifai(PATH);
-                fromClarifai.execute();
-                listItem = fromClarifai.resList;
-                break;
+
+                if(imageToUpl!=null && urledit.getText().toString()==null)
+                {
+                    PullFromClarifai fromClarifai = new PullFromClarifai(PATH,1);
+                    fromClarifai.execute();
+                    listItem = fromClarifai.resList;
+                    break;
+
+                }
+                else if(urledit.getText().toString()!=null)
+                {
+                    PATH=urledit.getText().toString();
+                    PullFromClarifai fromClarifai = new PullFromClarifai(PATH,2);
+                    fromClarifai.execute();
+                    listItem = fromClarifai.resList;
+                    break;
+                }
+
+                else{Toast.makeText(this,"Pick a picture from a gallery first",Toast.LENGTH_LONG).show(); return;}
+
+
 
 
 
         }
     }
 
+    private class DownloadAndShow extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
 
+        public DownloadAndShow(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -125,6 +193,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
+
+
 private class PullFromUSDA extends AsyncTask<Void,Void,Void>
 {
     String  name ="";
@@ -291,12 +361,14 @@ private class PullFromUSDA extends AsyncTask<Void,Void,Void>
 
         Bitmap image;
         String path;
+        Integer checki;
         Context context;
         public List<String> resList = new ArrayList<String>();
         Dialog progress = new Dialog(MainActivity.this);
-        public PullFromClarifai(String path) {
+        public PullFromClarifai(String path,Integer check) {
           //  this.image = image;
             this.path = path;
+            this.checki=check;
         }
 
         @Override
@@ -319,14 +391,17 @@ private class PullFromUSDA extends AsyncTask<Void,Void,Void>
                         final ClarifaiClient client = new ClarifaiBuilder("_6k_RoStJW5kX6SNIEpdaC9rynEXdq8gsiQveOgU","FXI-qfLNDXku6oIRWX56TV_WeG-CA7lgUjH7AKDN")
                                 .client(new OkHttpClient()).buildSync();
 
-                   final List<ClarifaiOutput<Concept>>  results =    client.getDefaultModels().foodModel().predict()
-                                .withInputs(ClarifaiInput.forImage(ClarifaiImage.of(new File(path)))).executeSync().get();
+
+            if(checki==1)
+            {
+                final List<ClarifaiOutput<Concept>>  results =    client.getDefaultModels().foodModel().predict()
+                        .withInputs(ClarifaiInput.forImage(ClarifaiImage.of(new File(path)))).executeSync().get();
 
                 if(results!=null && results.size()>0)
                 {
                     for (int i=0;i<results.size();i++)
                     {
-                    ClarifaiOutput<Concept> clarifaiOutput =results.get(i);
+                        ClarifaiOutput<Concept> clarifaiOutput =results.get(i);
                         List<Concept> concepts = clarifaiOutput.data();
                         if (concepts!=null && concepts.size()>0)
                         {
@@ -337,6 +412,29 @@ private class PullFromUSDA extends AsyncTask<Void,Void,Void>
                         }
                     }
                 }
+            }
+            else if(checki==2)
+            {
+                final List<ClarifaiOutput<Concept>>  resultsUrl = client.getDefaultModels().foodModel().predict().
+                        withInputs(ClarifaiInput.forImage(ClarifaiImage.of(path)))
+                        .executeSync().get();
+                if(resultsUrl!=null && resultsUrl.size()>0)
+                {
+                    for (int i=0;i<resultsUrl.size();i++)
+                    {
+                        ClarifaiOutput<Concept> clarifaiOutput =resultsUrl.get(i);
+                        List<Concept> concepts = clarifaiOutput.data();
+                        if (concepts!=null && concepts.size()>0)
+                        {
+                            for (int j=0;j<5;j++)
+                            {
+                                resList.add(concepts.get(j).name());
+                            }
+                        }
+                    }
+                }
+
+            }
 
             return resList;
         }
