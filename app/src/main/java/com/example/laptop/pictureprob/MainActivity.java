@@ -90,6 +90,7 @@ public void listener()
             fromUSDA.name = item;
             fromUSDA.execute();
 
+
         }
     });
 
@@ -106,6 +107,7 @@ public void listener()
 
         @Override
         public void afterTextChanged(Editable s) {
+
 
             new DownloadAndShow(imageToUpl)
                     .execute(urledit.getText().toString());

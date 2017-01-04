@@ -10,7 +10,8 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:weightSum="1">
 
         <ImageView
             android:id="@+id/imageToUpload"
@@ -47,7 +48,8 @@
         <ListView
             android:layout_width="match_parent"
             android:layout_height="239dp"
-            android:id="@+id/listitem"/>
+            android:id="@+id/listitem"
+            android:layout_weight="9.20" />
 
         <HorizontalScrollView
             android:id="@+id/horizontalView"
